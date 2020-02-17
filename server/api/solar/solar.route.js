@@ -17,7 +17,7 @@ router.route('/state/:stateCode/:metric')
     .get(solarCtrl.metric);
 
 
-// 127.0.0.1:4044/api/solar/state/al/avg_dni/min-annual
+// 127.0.0.1:4044/api/solar/state/al/avg_dni/maxAnnually?months=jan,feb,jun
 
 router.route('/state/:stateCode/:metric/:analyticsType')
     .get(solarCtrl.analytics);
