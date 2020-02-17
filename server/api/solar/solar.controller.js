@@ -55,9 +55,19 @@ const min = (months) => {
     });
     return _min;
 };
+const max = (months) => {
+    let _max = -100;
+    Object.keys(months).forEach((key) => {
+        if (months[key] > _max) {
+            _max = months[key];
+        }
+    });
+    return _max;
+};
 
 const analyticsTypes = {
     minAnnually: min,
+    maxAnnually: max,
 };
 
 exports.analytics = async (req, res, next) => {
@@ -72,7 +82,9 @@ exports.analytics = async (req, res, next) => {
         if (!dataMetric) throw new Error('no data for metric - ', metric);
 
         const result = { ...state };
+
         result[analyticsType] = analyticsTypes[analyticsType](dataMetric.monthly);
+
         return res.json(result);
     } catch (e) {
         next(e);
