@@ -33,6 +33,6 @@ exports.metric = async (req, res, next) => {
     if (!dataMetric) throw new Error('no data for metric - ', metric);
     return res.json({
         ...state,
-        dataMetric: dataMetric,
+        monthly: dataMetric.monthly,
     });
 };
