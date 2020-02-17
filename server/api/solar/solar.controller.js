@@ -38,7 +38,7 @@ exports.analytics = async (req, res, next) => {
     logger.info('analytics args = ', args.months);
 
     try {
-        if (!analyticsTypes[analyticsType]) throw new Error('analytics type not found');
+        if (!analyticsTypes[analyticsType]) throw new Error('analytics type not found - ', analyticsType);
 
         const [state, data] = await getStateData(stateCode);
         if (!data || !data.outputs) throw new Error('data does not exist');
@@ -46,19 +46,17 @@ exports.analytics = async (req, res, next) => {
         if (!dataMetric) throw new Error('no data for metric - ', metric);
 
         // filter months by args:
-        let monthly = {};
+        let monthly = dataMetric.monthly; // full year
         if (args.months) {
             const months = args.months.toLowerCase().split(',');
-            months.forEach((key) => {
-                monthly[key] = dataMetric.monthly[key];
-            });
-        } else {
-            monthly = dataMetric.monthly;
+            Object.keys(monthly)
+                .filter(key => !months.includes(key))
+                .forEach(key => delete monthly[key]);
         }
 
+        // Set Result:
         const result = { ...state, monthly: monthly };
         result[analyticsType] = analyticsTypes[analyticsType](monthly);
-
         return res.json(result);
     } catch (e) {
         next(e);
@@ -69,6 +67,7 @@ exports.analytics = async (req, res, next) => {
 
 
 // ============================================================================================================================
+// Early coding phases during dev...
 // ============================================================================================================================
 // phase #1 - partial
 // 127.0.0.1:4044/api/solar/state/al
