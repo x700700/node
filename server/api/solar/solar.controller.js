@@ -16,22 +16,10 @@ const getStateData = async (stateCode) => {
 
 // Analytics Functions:
 const min = (months) => {
-    let _min = 100;
-    Object.keys(months).forEach((key) => {
-        if (months[key] < _min) {
-            _min = months[key];
-        }
-    });
-    return _min;
+    return Math.min(...Object.values(months));
 };
 const max = (months) => {
-    let _max = -100;
-    Object.keys(months).forEach((key) => {
-        if (months[key] > _max) {
-            _max = months[key];
-        }
-    });
-    return _max;
+    return Math.max(...Object.values(months));
 };
 
 // Analytics Types Map - Name <> Function:
