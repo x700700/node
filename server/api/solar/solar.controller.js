@@ -17,22 +17,64 @@ const getStateData = async (stateCode) => {
 
 exports.state = async (req, res, next) => {
     const { stateCode } = req.params;
-    logger.info(`state - ${stateCode}`);
-    const [state, data] = await getStateData(stateCode);
-    return res.json({
-        ...state,
-        data: data,
-    });
+    logger.info(`state=${stateCode}`);
+    try {
+        const [state, data] = await getStateData(stateCode);
+        return res.json({
+            ...state,
+            data: data,
+        });
+    } catch (e) {
+        next(e);
+    }
 };
 
 exports.metric = async (req, res, next) => {
     const { stateCode, metric } = req.params;
-    const [state, data] = await getStateData(stateCode);
-    if (!data || !data.outputs) throw new Error('data does not exist');
-    const dataMetric = data.outputs[metric];
-    if (!dataMetric) throw new Error('no data for metric - ', metric);
-    return res.json({
-        ...state,
-        monthly: dataMetric.monthly,
+    logger.info(`state=${stateCode} ; metric=${metric}`);
+    try {
+        const [state, data] = await getStateData(stateCode);
+        if (!data || !data.outputs) throw new Error('data does not exist');
+        const dataMetric = data.outputs[metric];
+        if (!dataMetric) throw new Error('no data for metric - ', metric);
+        return res.json({
+            ...state,
+            monthly: dataMetric.monthly,
+        });
+    } catch (e) {
+        next(e);
+    }
+};
+
+const min = (months) => {
+    let _min = 100;
+    Object.keys(months).forEach((key) => {
+        if (months[key] < _min) {
+            _min = months[key];
+        }
     });
+    return _min;
+};
+
+const analyticsTypes = {
+    minAnnually: min,
+};
+
+exports.analytics = async (req, res, next) => {
+    const { stateCode, metric, analyticsType } = req.params;
+    logger.info(`state=${stateCode} ; metric=${metric} ; analyticsType=${analyticsType}`);
+    try {
+        if (!analyticsTypes[analyticsType]) throw new Error('analytics type not found');
+
+        const [state, data] = await getStateData(stateCode);
+        if (!data || !data.outputs) throw new Error('data does not exist');
+        const dataMetric = data.outputs[metric];
+        if (!dataMetric) throw new Error('no data for metric - ', metric);
+
+        const result = { ...state };
+        result[analyticsType] = analyticsTypes[analyticsType](dataMetric.monthly);
+        return res.json(result);
+    } catch (e) {
+        next(e);
+    }
 };
